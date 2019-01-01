@@ -52,6 +52,39 @@ class ShortUrlService {
     }
 
     /**
+     * 生成短码
+     * @param string $long_url 原始URL
+     * @return array|false 返回短码和原始URL，失败返回false
+     */
+    
+    /**
+     * 生成短码
+     * @param string $long_url 原始URL
+     * @return array|false 返回短码和原始URL，失败返回false
+     */
+    public function create_code(string $long_url)
+    {
+        // 1. 生成短码
+        $short_code = substr(md5(uniqid()), 0, 6);
+        
+        // 2. 存储到数据库
+        $model = ShortUrlModel::getInstance();
+        $result = $model->insert([
+            'long_url' => $long_url,
+            'short_code' => $short_code
+        ]);
+        
+        if (!$result) {
+            return false;
+        }
+        
+        return [
+            'code' => $short_code,
+            'long_url' => $long_url
+        ];
+    }
+
+    /**
      * 缩短 URL
      * @param string $longUrl 原始 URL
      * @return array 包含短码的数组

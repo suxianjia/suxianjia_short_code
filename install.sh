@@ -2,10 +2,26 @@
 #  .env.test
 # .env.prod
 # .env.dev
+
+
+# phpBin=$(which php)
+phpBin=$(which php82)
+      # 获取当前目录
+webpath=$(pwd)
 # ======================================================
 # // cd /Users/yx-dev/work_directory/wwwroot/composer_xianjia_root/xianjia_short_code && composer dump-autoload
 # ======================================================
 composer_dump() {
+ 
+    if [ ! -f "${webpath}/vendor/autoload.php" ]; then
+        # echo "错误: 未找到 vendor/autoload.php 文件，请先运行 composer install。"
+        # php82 composer82.phar install
+        echo "错误: 未找到 vendor/autoload.php 文件，请先运行  $phpBin composer82.phar install"
+
+        exit 1
+    fi
+
+
     echo "正在自动载入"
     composer dump-autoload
     echo "自动载入 end"

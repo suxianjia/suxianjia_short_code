@@ -48,9 +48,17 @@ class ShortUrlModel extends CommonModel {
     public function incrementHits(string $code): bool {
         return $this->updateByField(
             $this->table,
-            'short_code',
-            $code,
-            ['hits' => $this->raw("hits + 1")]
+            ['short_code' => $code],
+            ['hits' => 'hits + 1']
         );
+    }
+
+    /**
+     * 插入数据
+     * @param array $data 数据数组
+     * @return bool 是否成功
+     */
+    public function insert(array $data): bool {
+        return $this->insertOne($this->table, $data);
     }
 }

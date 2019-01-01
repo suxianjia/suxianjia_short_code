@@ -1,6 +1,31 @@
 
 #!/bin/bash
 
+   # 获取当前目录
+webpath=$(pwd)
+# phpBin=$(which php)
+phpBin=$(which php82)
+
+# 检查 PHP 是否安装
+if [ -z "$phpBin" ]; then
+    echo "错误：PHP 未安装或未在 PATH 中"
+    exit 1
+fi
+# 检查 PHP 版本
+
+$phpBin --version 
+phpMajorVersion=$($phpBin -r 'echo PHP_MAJOR_VERSION;')
+
+#   
+    if [ ! -f "${webpath}/vendor/autoload.php" ]; then
+    
+         echo "错误: 未找到 vendor/autoload.php 文件，请先运行  $phpBin composer82.phar install"
+
+        exit 1
+    fi
+
+
+
 # 从 .env 文件加载变量
 if [ -f .env ]; then
     source .env
@@ -93,7 +118,7 @@ echo "错误日志: $error_log_file"
 echo "PID记录: $pid_file"
 
 # 启动PHP服务器
-nohup php -S localhost:$port -t "$PUBLIC_DIR" >> "$log_file" 2>> "$error_log_file" &
+nohup $phpBin -c start.ini -S localhost:$port -t "$PUBLIC_DIR" >> "$log_file" 2>> "$error_log_file" &
 server_pid=$!
 
 # 记录PID到文件

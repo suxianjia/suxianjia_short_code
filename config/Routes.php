@@ -14,6 +14,7 @@ return [
             ['GET', '/short-url/all', 'ShortUrlController@all'],
             ['GET', '/short-url/find', 'ShortUrlController@find'],
             ['POST', '/short-url/create', 'ShortUrlController@create'],
+            ['POST', '/short-url/create_code', 'ShortUrlController@create_code'],
             ['PUT', '/short-url/update', 'ShortUrlController@update'],
             ['DELETE', '/short-url/delete', 'ShortUrlController@delete'],
             ['GET', '/short-url/redirect', 'ShortUrlController@redirect'],

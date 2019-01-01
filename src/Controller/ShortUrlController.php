@@ -20,20 +20,34 @@ class ShortUrlController {
         $redis = RedisServices::getInstance();
         $response->success([],"ShortUrlController index index!");
     }
+//shorten
 
-    public function shorten(Request $request, Response $response) {
-        // $url = $request->getPost('url', '');
-        // if (empty($url)) {
-        //     $response->setStatusCode(400);
-        //     $response->setHeader('Content-Type', 'application/json');
-        //     $response->setContent(json_encode(['error' => 'URL不能为空']));
-        //     return $response;
-        // }
+//     生成短码
+//     接收 长链接 
+//     返回 短码 和 长链接
+//     1. 接收长链接
+//     2. 生成短码
+//    public function  create_code  (Request $request, Response $response) {
+    public function create_code  (Request $request, Response $response) {
+        
 
-        // $shortCode = $this->generateShortCode($url);
-        // $response->setHeader('Content-Type', 'application/json');
-        // $response->setContent(json_encode(['short_url' => "http://localhost:8000/{$shortCode}", 'status' => 'success']));
-        // return $response;
+         $long_url = $request->get('long_url', '');
+
+
+        // 1. 短码 
+    $res = ShortUrlService::getInstance()->create_code($long_url);
+    
+    // 2. 判断结果有效性
+    if (!$res ) {
+        $response->setStatusCode(404);
+        return $response->json(['error' => 'create code failed']);  
+    }
+    $response->success([
+        "code"=> $res['code'],
+        "url"=>$res['long_url']
+    ]," create code   Success");
+
+        
     }
 //   // echo "<p> matches:". var_export($matches )   .'</p>';
 //使用。 use 行不行 ？ 
