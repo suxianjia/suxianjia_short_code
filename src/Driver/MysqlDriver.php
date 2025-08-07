@@ -1,6 +1,6 @@
 <?php
 namespace Suxianjia\xianjia_short_code\Driver;
-
+use Suxianjia\xianjia_short_code\Interface\MysqlInterface;
 use PDO;
 use PDOException;
 
@@ -43,6 +43,48 @@ class MysqlDriver implements MysqlInterface {
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         ]);
+    }
+
+    /**
+     * 切换到从库
+     */
+    public function all() {
+        $sql = "SELECT * FROM {$this->tableName}";
+        return $this->currentConnection->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function find($id) {
+        $sql = "SELECT * FROM {$this->tableName} WHERE id = :id";
+        $stmt = $this->currentConnection->prepare($sql);
+        $stmt->execute(['id' => $id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function create($data) {
+        $columns = implode(', ', array_keys($data));
+        $values = ':' . implode(', :', array_keys($data));
+        $sql = "INSERT INTO {$this->tableName} ($columns) VALUES ($values)";
+        $stmt = $this->currentConnection->prepare($sql);
+        $stmt->execute($data);
+        return $this->currentConnection->lastInsertId();
+    }
+
+    public function update($id, $data) {
+        $set = [];
+        foreach ($data as $key => $value) {
+            $set[] = "$key = :$key";
+        }
+        $set = implode(', ', $set);
+        $sql = "UPDATE {$this->tableName} SET $set WHERE id = :id";
+        $data['id'] = $id;
+        $stmt = $this->currentConnection->prepare($sql);
+        return $stmt->execute($data);
+    }
+
+    public function delete($id) {
+        $sql = "DELETE FROM {$this->tableName} WHERE id = :id";
+        $stmt = $this->currentConnection->prepare($sql);
+        return $stmt->execute(['id' => $id]);
     }
 
     /**

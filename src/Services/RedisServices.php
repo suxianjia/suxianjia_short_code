@@ -13,34 +13,12 @@ class RedisServices implements RedisInterface
     private $redis;
     private $redisDriver;
 
-    public function __construct(RedisDriver $redisDriver = null)
+    public function __construct( )
     {
-        $this->redisDriver = $redisDriver ?? new RedisDriver();
-        $config = SystemConfig::getInstance()::getModel('Redis');
-        $this->redis = new Redis();
-       
-        
-        try {
-            $connected = $this->redis->connect(
-                $config['host'] ?? '127.0.0.1',
-                $config['port'] ?? 6379,
-                $config['timeout'] ?? 2.5
-            );
-            
-            if (!$connected) {
-                throw new RedisException("Redis连接超时");
-            }
-            
-            if (!empty($config['password'])) {
-                $this->redis->auth($config['password']);
-            }
-            
-            if (!empty($config['database'])) {
-                $this->redis->select($config['database']);
-            }
-        } catch (RedisException $e) {
-            throw new \RuntimeException("Redis连接失败: ".$e->getMessage());
-        }
+ 
+        $config = SystemConfig::getInstance()::getModel('Redis'); 
+        $this->redis = new RedisDriver($config);
+ 
     }
 
     public static function getInstance(): self
@@ -59,11 +37,11 @@ class RedisServices implements RedisInterface
         return $this->redis;
     }
 
-    public function set(string $key, $value, int $ttl = 0): bool
+    public function set($key, $value, $ttl = 0): bool
     {
         try {
             if ($ttl > 0) {
-                return $this->setex($key, $ttl, $value);
+                return $this->redis->setex($key, $ttl, $value);
             }
             return $this->redis->set($key, $value);
         } catch (RedisException $e) {
@@ -80,7 +58,7 @@ class RedisServices implements RedisInterface
         }
     }
 
-    public function get(string $key)
+    public function get($key)
     {
         try {
             return $this->redis->get($key);
@@ -98,7 +76,7 @@ class RedisServices implements RedisInterface
         }
     }
 
-    public function delete(string $key): bool
+    public function delete($key): bool
     {
         try {
             return $this->redis->del($key) > 0;

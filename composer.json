@@ -5,7 +5,8 @@
   "require": {
     "php": "^8.2",
     "ext-pdo": "*",
-    "ext-redis": "*"
+    "ext-redis": "*",
+    "predis/predis": "^3.2"
   },
   "autoload": {
     "psr-4": {
