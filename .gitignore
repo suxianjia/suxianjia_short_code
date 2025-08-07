@@ -1,0 +1,14 @@
+# 依赖目录
+/vendor
+
+# 环境配置
+.env
+
+# 系统生成文件
+install.lock
+*.log
+
+# IDE文件
+.idea
+*.swp
+.DS_Store
