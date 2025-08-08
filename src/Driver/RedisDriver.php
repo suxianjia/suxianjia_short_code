@@ -4,19 +4,52 @@ use Suxianjia\xianjia_short_code\Interface\RedisInterface;
 use Predis\Client;
 
 /**
- * Redis 驱动类（基于 Predis）
+ * Redis 驱动类（基于 Predis） 驱动类（支持主从配置）
  */
 class RedisDriver implements RedisInterface {
-    private $client;
+    private $master;
+    private $slaves = [];
+    private $currentConnection;
 
-    public function __construct($config) {
-        $this->client = new Client([
-            'scheme' => 'tcp',
-            'host'   => getenv('REDIS_HOST'),
-            'port'   => getenv('REDIS_PORT'),
-            'password' => getenv('REDIS_PASSWORD') ?: null,
+    /**
+     * 创建 Redis 连接
+     * @param array $config Redis 配置
+     * @return Client
+     */
+    private function createConnection(array $config): Client {
+        return new Client([
+            'scheme' => $config['scheme'] ?? 'tcp',
+            'host'   => $config['host'],
+            'port'   => $config['port'],
+            'password' => $config['password'] ?? null,
         ]);
     }
+
+        public function __construct(array $masterConfig, array $slaveConfigs = []) {
+        $this->master = $this->createConnection($masterConfig);
+        foreach ($slaveConfigs as $config) {
+            $this->slaves[] = $this->createConnection($config);
+        }
+        $this->currentConnection = $this->master;
+    }
+
+    /**
+     * 切换到主库
+     */
+    public function useMaster() {
+        $this->currentConnection = $this->master;
+    }
+
+
+    /**
+     * 切换到从库
+     */
+    public function useSlave() {
+        if (!empty($this->slaves)) {
+            $this->currentConnection = $this->slaves[array_rand($this->slaves)];
+        }
+    }
+
 
     /**
      * 设置缓存
@@ -26,12 +59,17 @@ class RedisDriver implements RedisInterface {
      * @return bool
      */
     public function set($key, $value, $ttl = 0) {
-        if ($ttl > 0) {
-            $this->client->setex($key, $ttl, $value);
-        } else {
-            $this->client->set($key, $value);
+        $this->useMaster();
+        try {
+            if ($ttl > 0) {
+                $this->currentConnection->setex($key, $ttl, $value);
+            } else {
+                $this->currentConnection->set($key, $value);
+            }
+            return true;
+        } catch (\Exception $e) {
+            throw new \RuntimeException("Redis 设置缓存失败: " . $e->getMessage());
         }
-        return true;
     }
 
     /**
@@ -40,7 +78,12 @@ class RedisDriver implements RedisInterface {
      * @return mixed
      */
     public function get($key) {
-        return $this->client->get($key);
+        $this->useSlave();
+        try {
+            return $this->currentConnection->get($key);
+        } catch (\Exception $e) {
+            throw new \RuntimeException("Redis 获取缓存失败: " . $e->getMessage());
+        }
     }
 
     /**
@@ -49,14 +92,14 @@ class RedisDriver implements RedisInterface {
      * @return bool
      */
     public function isConnected(): bool {
-        return $this->client->isConnected();
+        return $this->currentConnection->isConnected();
     }
 
     /**
      * 关闭连接
      */
     public function close(): void {
-        $this->client->disconnect();
+        $this->currentConnection->disconnect();
     }
 
     /**
@@ -65,6 +108,6 @@ class RedisDriver implements RedisInterface {
      * @return bool
      */
     public function delete($key) {
-        return $this->client->del([$key]) > 0;
+        return $this->currentConnection->del([$key]) > 0;
     }
 }

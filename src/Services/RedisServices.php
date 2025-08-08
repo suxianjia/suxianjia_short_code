@@ -14,10 +14,12 @@ class RedisServices implements RedisInterface
     private $redisDriver;
 
     public function __construct( )
-    {
- 
-        $config = SystemConfig::getInstance()::getModel('Redis'); 
-        $this->redis = new RedisDriver($config);
+    { 
+                $Redis = SystemConfig::getInstance():: getModel('Redis');
+        $master_config = $Redis['master']; 
+        $slaves_config = $Redis['slaves']; 
+
+        $this->redis = new RedisDriver($master_config, $slaves_config);
  
     }
 

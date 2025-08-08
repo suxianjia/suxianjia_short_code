@@ -31,8 +31,10 @@ class MysqlServices implements MysqlInterface {
      * 构造函数
      */
     private function __construct() {
-        $config = SystemConfig::getInstance():: getModel('Database');
-        $this->mysql = new MysqlDriver($config);
+        $Database = SystemConfig::getInstance():: getModel('Database');
+        $master_config = $Database['master']; 
+        $slaves_config = $Database['slaves']; 
+        $this->mysql = new MysqlDriver($master_config, $slaves_config);
  
     }
 
@@ -112,4 +114,16 @@ class MysqlServices implements MysqlInterface {
     public function paginate(string $sql, array $params = [], int $page = 1, int $pageSize = 10): array {
         return $this->mysql->paginate($sql, $params, $page, $pageSize);
     }
+
+
+
+        public function __destruct()
+    {
+        // $this->mysql->close();
+
+       
+    }
+
+
+
 }
