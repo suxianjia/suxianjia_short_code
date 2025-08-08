@@ -1,5 +1,5 @@
 {
-  "name": "xianjia/short_code",
+  "name": "suxianjia/short_code",
   "description": "基于 Nginx + PHP 8.2 + MySQL 8 + Redis 的短域名系统",
   "type": "project",
   "license": "MIT",
