@@ -1,10 +1,35 @@
 <?php
 namespace Suxianjia\xianjia_short_code\Services;
 use Suxianjia\xianjia_short_code\Core\SystemConfig; // $config = SystemConfig::getInstance():: getModel('Database');
- 
+ use Suxianjia\xianjia_short_code\Model\ShortUrlModel;
 use Suxianjia\xianjia_short_code\Services\MysqlServices; //      MysqlServices::getInstance()
 use Suxianjia\xianjia_short_code\Services\RedisServices; //        RedisServices::getInstance()
- 
+
+use   Suxianjia\xianjia_short_code\Interface\DBInterface; // 数据库模型-接口类 
+
+ /**
+  * 
+  * 
+  * 
+  * 
+  -- 短链接数据表结构
+CREATE TABLE IF NOT EXISTS `short_urls` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `long_url` TEXT NOT NULL,
+  `short_code` VARCHAR(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `expires_at` TIMESTAMP NULL DEFAULT NULL,
+  `hits` INT UNSIGNED DEFAULT 0,
+  `user_id` BIGINT UNSIGNED DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_short_code` (`short_code`),
+  KEY `idx_user` (`user_id`),
+  KEY `idx_expires` (`expires_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  * 
+  * 
+  * */
 
 /**
  * 短链接服务类
@@ -31,11 +56,14 @@ class ShortUrlService {
      * @param string $longUrl 原始 URL
      * @return array 包含短码的数组
      */
-    public function shorten($longUrl) {
+    public static function shorten($longUrl) {
         $shortCode = $this->generateShortCode();
- $db = MysqlServices::getInstance();
+        // $db = MysqlServices::getInstance();
+
+              $Model= new ShortUrlModel;
+
         $redis = RedisServices::getInstance();
-        $db->insert('short_urls', [
+        $Model->insert('short_urls', [
             'long_url' => $longUrl,
             'short_code' => $shortCode
         ]);
@@ -48,24 +76,30 @@ class ShortUrlService {
      * @param string $shortCode 短码
      * @return array 包含原始 URL 的数组
      */
-    public function getOriginalUrl($shortCode) {
-$db = MysqlServices::getInstance();
-$redis = RedisServices::getInstance();
+    public static function getOriginalUrl($shortCode) {
+  
 
-        $longUrl =        $redis->get("shorturl:$shortCode");
+        $longUrl =   RedisServices::getInstance()::$obj->get("shorturl:$shortCode");
         if ($longUrl) {
             return ['long_url' => $longUrl];
         } 
-        $result =  $db->fetch("SELECT long_url FROM short_urls WHERE short_code = ?", [$shortCode]);
+   
+        $Model= new ShortUrlModel ();
+         $result = $Model->findByCode($shortCode); 
         if ($result) {
-            $redis->setex("shorturl:$shortCode", 3600, $result['long_url']);
+ 
+            RedisServices::getInstance()::$obj->setex("shorturl:$shortCode", 3600, $result['long_url']);
             return $result['long_url'];
         }
 
         return  $result;
     }
-
-    private function generateShortCode() {
-        return substr(md5(uniqid()), 0, 6);
+/**
+ *  生成 short_code 
+ * short_code
+ * 
+ * */
+    private  static function generateShortCode() {
+        return substr(md5(uniqid()), 0, 8);
     }
 }

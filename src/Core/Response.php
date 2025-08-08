@@ -39,4 +39,40 @@ class Response {
         ]);
         exit;
     }
+
+    //  增加 redirect 方法   // 4. 执行301永久重定向
+    // return $response->redirect($longUrl, 301);
+
+    /**
+     * 执行URL重定向
+     * @param string $url 目标URL
+     * @param int $statusCode 重定向状态码(默认301)
+     * @param bool $validate 是否验证URL有效性
+     */
+    public static function redirect($url, $statusCode = 301, $validate = true) {
+        if ($validate && !filter_var($url, FILTER_VALIDATE_URL)) {
+            self::error('Invalid redirect URL', 400);
+        }
+
+        header("HTTP/1.1 {$statusCode} " . self::getStatusText($statusCode));
+        header("Location: {$url}");
+        exit;
+    }
+
+    /**
+     * 获取HTTP状态文本
+     * @param int $code 状态码
+     * @return string
+     */
+    private static function getStatusText($code) {
+        $statusTexts = [
+            301 => 'Moved Permanently',
+            302 => 'Found',
+            303 => 'See Other',
+            307 => 'Temporary Redirect',
+            308 => 'Permanent Redirect'
+        ];
+        return $statusTexts[$code] ?? 'Unknown Status';
+    }
+    
 }

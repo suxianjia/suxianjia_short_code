@@ -8,7 +8,7 @@ use PDOException;
 /**
  * MySQL 驱动类（支持主从配置）
  */
-class MysqlDriver implements DBInterface {
+class MysqliDriver implements DBInterface {
     private $master;
     private $slaves = [];
     private $currentConnection;

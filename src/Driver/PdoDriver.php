@@ -8,7 +8,8 @@ use PDOException;
 /**
  * MySQL 驱动类（支持主从配置）
  */
-class MysqlDriver implements DBInterface {
+class PdoDriver implements DBInterface {
+       private  $type = 'mysql';
     private $master;
     private $slaves = [];
     private $currentConnection;
@@ -49,13 +50,18 @@ class MysqlDriver implements DBInterface {
     /**
      * 切换到从库
      */
-    public function all(string $tableName) {
+    public function all() {
+           $args = func_get_args();
+           $tableName = $args[0] ?? '';
            $this->useSlave();
         $sql = "SELECT * FROM {$tableName}";
         return $this->currentConnection->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function find(string $tableName, $id) {
+    public function find() {
+           $args = func_get_args();
+           $tableName = $args[0] ?? '';
+           $id = $args[1] ?? null;
            $this->useSlave();
         $sql = "SELECT * FROM {$tableName} WHERE id = :id";
         $stmt = $this->currentConnection->prepare($sql);
@@ -63,7 +69,10 @@ class MysqlDriver implements DBInterface {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function create(string $tableName, $data) {
+    public function create() {
+             $args = func_get_args();
+             $tableName = $args[0] ?? '';
+             $data = $args[1] ?? [];
              $this->useMaster();
         $columns = implode(', ', array_keys($data));
         $values = ':' . implode(', :', array_keys($data));
@@ -73,7 +82,11 @@ class MysqlDriver implements DBInterface {
         return $this->currentConnection->lastInsertId();
     }
 
-    public function update(string $tableName, $id, $data) {
+    public function update() {
+             $args = func_get_args();
+             $tableName = $args[0] ?? '';
+             $id = $args[1] ?? null;
+             $data = $args[2] ?? [];
              $this->useMaster();
         $set = [];
         foreach ($data as $key => $value) {
@@ -86,7 +99,10 @@ class MysqlDriver implements DBInterface {
         return $stmt->execute($data);
     }
 
-    public function delete(string $tableName, $id) {
+    public function delete() {
+             $args = func_get_args();
+             $tableName = $args[0] ?? '';
+             $id = $args[1] ?? null;
              $this->useMaster();
         $sql = "DELETE FROM {$tableName} WHERE id = :id";
         $stmt = $this->currentConnection->prepare($sql);
@@ -115,7 +131,10 @@ class MysqlDriver implements DBInterface {
      * @param array $params
      * @return array
      */
-    public function query(string $sql, array $params = []): array {
+    public function query() {
+        $args = func_get_args();
+        $sql = $args[0] ?? '';
+        $params = $args[1] ?? [];
         $this->useSlave();
         $stmt = $this->currentConnection->prepare($sql);
         $stmt->execute($params);
@@ -128,7 +147,10 @@ class MysqlDriver implements DBInterface {
      * @param array $params
      * @return int 受影响的行数
      */
-    public function execute(string $sql, array $params = []): int {
+    public function execute() {
+        $args = func_get_args();
+        $sql = $args[0] ?? '';
+        $params = $args[1] ?? [];
         $this->useMaster();
         $stmt = $this->currentConnection->prepare($sql);
         $stmt->execute($params);
