@@ -39,8 +39,15 @@ class MysqlServices extends MysqlFactory {
         self::$obj = self::createDriver(      $driverType , $master_config, $slaves_config);
     }
 
-
- 
+    /**
+     * 插入数据
+     * @param string $table 表名
+     * @param array $data 数据
+     * @return bool
+     */
+    public function insert(string $table, array $data): bool {
+        return self::$obj->insert($table, $data);
+    }
 
 
 }

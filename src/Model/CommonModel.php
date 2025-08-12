@@ -80,6 +80,26 @@ class CommonModel  extends MysqlServices {
 
 
 
+       /**
+     * 插入数据
+     * @param string $tableName 表名
+     * @param array $data 数据
+     * @return bool
+     */
+    public function insert(string $tableName = '' , array $data = [] ): bool {
+        return  MysqlServices::getInstance()::$obj->insert($tableName, $data);
+    }
+
+    /**
+     * 
+     * 更新数据
+     * 
+     * 
+    */
+    
+
+
+
 
 
 

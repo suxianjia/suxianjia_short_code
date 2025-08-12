@@ -7,7 +7,9 @@
 # phpBin=$(which php)
 phpBin=$(which php82)
       # 获取当前目录
-webpath=$(pwd)
+# webpath=$(pwd)
+webpath=$(dirname "$0")
+phpBin=/opt/homebrew/opt/php@8.2/bin/php
 # ======================================================
 # // cd /Users/yx-dev/work_directory/wwwroot/composer_xianjia_root/xianjia_short_code && composer dump-autoload
 # ======================================================

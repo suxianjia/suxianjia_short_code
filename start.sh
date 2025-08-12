@@ -1,15 +1,28 @@
-
 #!/bin/bash
 
    # 获取当前目录
-webpath=$(pwd)
+# webpath=$(pwd)
+webpath=$(dirname "$0") # 获取当前文件所在目录
 # phpBin=$(which php)
 phpBin=$(which php82)
+phpBin=/opt/homebrew/opt/php@8.2/bin/php
+# find_php_bin() {
+# local phpBin=$(which php82 2>/dev/null || php82 php 2>/dev/null)
+# echo "$phpBin"
+#     exit 1
+# }
+
+# find_php_bin
+
+
+# which php82
 
 # 检查 PHP 是否安装
 if [ -z "$phpBin" ]; then
     echo "错误：PHP 未安装或未在 PATH 中"
     exit 1
+else 
+    echo "找到PHP环境，路径: $phpBin"
 fi
 # 检查 PHP 版本
 
