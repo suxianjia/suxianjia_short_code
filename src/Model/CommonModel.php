@@ -92,14 +92,78 @@ class CommonModel  extends MysqlServices {
 
     /**
      * 
-     * 更新数据
-     * 
-     * 
+     * 更新数据 
+     * 指定 更新条件 
+        * 
+
     */
-    
+    public function updateByField(string $tableName = '', array $conditions = [], array $data = []) {
+        if (empty($tableName)) {
+            throw new \InvalidArgumentException('Table name cannot be empty');
+        }
+        if (empty($conditions) || empty($data)) {
+            throw new \InvalidArgumentException('Conditions and data cannot be empty');
+        }
 
+        $setClause = implode(', ', array_map(fn($k) => "$k = ?", array_keys($data)));
+        $whereClause = implode(' AND ', array_map(fn($k) => "$k = ?", array_keys($conditions)));
+        $params = array_merge(array_values($data), array_values($conditions));
 
+        try {
+            return MysqlServices::getInstance()::$obj->execute(
+                "UPDATE {$tableName} SET $setClause WHERE $whereClause",
+                $params
+            );
+        } catch (\Exception $e) {
+            throw new \RuntimeException("Failed to update data: " . $e->getMessage());
+        }
+    }
+/**
+ * 
+ * 
+ * incrementByField
+ * 
+        *   
+        *        return $this->incrementByField(   $this->tableName,  ['short_code' => $code],  ['hits' => 'hits + 1' ]  );
+        *         return $this->incrementByField(
+        *         $this->tableName,
+        *          ['short_code' => $code],
+        *          ['hits' => 'hits + 1']
+        *     );
+        * UPDATE `short_urls` SET `hits` = hits + 1  WHERE `short_urls`.`short_code` = $code
+ * */
 
+    public function incrementByField(string $tableName = '', array $conditions = [], array $increments = []) {
+        if (empty($tableName)) {
+            throw new \InvalidArgumentException('Table name cannot be empty');
+        }
+        if (empty($conditions) || empty($increments)) {
+            throw new \InvalidArgumentException('Conditions and increments cannot be empty');
+        }
+
+        // Validate increments format (e.g., 'hits + 1')
+        foreach ($increments as $field => $expr) {
+            if (!preg_match('/^\w+\s*\+\s*\d+$/', $expr)) {
+                throw new \InvalidArgumentException("Invalid increment expression for field: {$field}");
+            }
+        }
+
+        $setClause = implode(', ', array_map(
+            fn($field, $expr) => "{$field} = {$expr}",
+            array_keys($increments),
+            array_values($increments)
+        ));
+        $whereClause = implode(' AND ', array_map(fn($k) => "$k = ?", array_keys($conditions)));
+
+        try {
+            return MysqlServices::getInstance()::$obj->execute(
+                "UPDATE {$tableName} SET $setClause WHERE $whereClause",
+                array_values($conditions)
+            );
+        } catch (\Exception $e) {
+            throw new \RuntimeException("Failed to increment counter: " . $e->getMessage());
+        }
+    }
 
 
 

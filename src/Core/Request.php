@@ -20,9 +20,26 @@ class Request {
         );
         return self::filterXSS($data);
     }
-
+    /**
+     * 
+     * 
+     * get
+     * $default = null
+     * */
     public static function get(string $key, $default = null) {
         $data = self::all();
+        return self::getNestedValue($data, $key, $default);
+    }
+
+    /**
+     * 
+     * 
+     * post
+     * $default = null
+     * */
+
+    public function post (string $key, $default = null){
+                $data = self::all();
         return self::getNestedValue($data, $key, $default);
     }
 

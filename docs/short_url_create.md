@@ -1,5 +1,5 @@
 # API 测试报告
-# 测试日期: 2025-08-12
+# 测试日期: 2025-08-13
 ## 测试用例
 ### 测试用例方法: short_url_create
 ## 简要描述: [] 
@@ -16,7 +16,8 @@ POST
 ## 输入参数:
 | 参数名 | 值 |  必选 | 参数类型 | 说明 |
 |:--------:|:----:|:----:|:----:|:------:|
-| long_url | https://www.upetrol.net/new_product_detail/id/1601 | 否 | string | - | 
+| long_url | https://www.upetrol.net/new_product_detail/id/1601/user_id/234567 | 否 | string | - | 
+| user_id | 1601 | 否 | string | - | 
  
  
  
@@ -24,15 +25,20 @@ POST
 ## 返回值: string
 ## 请求结果:  
 ```shell  
-null
+200
 ```   
  
 ## 成功返回示例:
 ```json  
 {
-    "status": "null",
-    "msg": "",
-    "data": 
+    "status": "200",
+    "msg": "db create Success",
+    "data": {
+  "long_url": "https://www.upetrol.net/new_product_detail/id/1601/user_id/234567 user_id=1601",
+  "short_code": "2f41902f61",
+  "expires_at": "2025-08-13 13:40:33",
+  "result": true
+}
 }
 ```  
  
@@ -44,9 +50,14 @@ null
 ## 错误返回示例:
 ```json  
 {
-    "status": "null",
-    "msg": "",
-    "data":  
+    "status": "200",
+    "msg": "db create Success",
+    "data":  {
+  "long_url": "https://www.upetrol.net/new_product_detail/id/1601/user_id/234567 user_id=1601",
+  "short_code": "2f41902f61",
+  "expires_at": "2025-08-13 13:40:33",
+  "result": true
+}
 }
 ```  
  
@@ -54,3 +65,6 @@ null
 ## 返回参数:
 | 参数名 | 值 | 必选 | 类型 | 说明 |
 |:------:|:--:|:----:|:----:|:----:|
+| code | 200 | 否 | string | - |
+| message | db create Success | 否 | string | - |
+| data | {"long_url":"https://www.upetrol.net/new_product_detail/id/1601/user_id/234567 user_id=1601","short_code":"2f41902f61","expires_at":"2025-08-13 13:40:33","result":true} | 否 | string | - |

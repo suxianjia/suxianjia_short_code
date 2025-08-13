@@ -35,22 +35,25 @@ use Suxianjia\xianjia_short_code\Model\CommonModel;
  
 
 class ShortUrlModel extends CommonModel {
-    protected $table = 'short_urls';
+    protected $tableName = 'short_urls';
 
-    public function findByCode(string $code = ''): ?array {
-// var_dump( $code);
+    public function findByCode(string $code = ''): ?array { 
         $conditions = [
             'short_code' => $code
         ];
-        return $this->whereOne($this->table,$conditions );  
+        return $this->whereOne($this->tableName,$conditions );  
     }
 
-    public function incrementHits(string $code): bool {
-        return $this->updateByField(
-            $this->table,
-            ['short_code' => $code],
-            ['hits' => 'hits + 1']
-        );
+    public function findByLong_url(string $long_url = ''): ?array { 
+        $conditions = [
+            'long_url' => $long_url
+        ];
+        return $this->whereOne($this->tableName,$conditions );  
+    }
+
+
+    public function incrementHits(string $code = ''): bool {
+        return $this->incrementByField(   $this->tableName,  ['short_code' => $code],  ['hits' => 'hits + 1' ]  );
     }
 
     /**
@@ -58,7 +61,19 @@ class ShortUrlModel extends CommonModel {
      * @param array $data 数据数组
      * @return bool 是否成功
      */
-    public function insertOne(array $data = []): bool {
-        return $this->insert($this->table, $data);
+    public function insertOne(array $data = []): bool |array {
+        return $this->insert($this->tableName, $data);
     }
+
+    /**
+     * 
+     * create
+     * 
+     * */
+
+        public function createOne(array $data = []): bool |array {
+ 
+        return $this->create($this->tableName, $data);
+    }
+
 }

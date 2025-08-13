@@ -19,16 +19,50 @@ fi
 #  http://localhost:8000/
 # get
 #  {"code":200,"message":"hello index!","data":[]}
-
-
+# http://localhost:8000/8c979d0b1c
+# http://localhost:8000/8c979d0b1c
+# http://localhost:8000/short-url/find?code=8c979d0b1c
 test_name='短链接重定向测试'
 test_method='GET'
+
+short_code="8c979d0b1c"
 test_data=(
-    "key1=value1"
-    "key2=value2"
+    "short_code=8c979d0b1c"
+    # "key2=value2"
 )
 
-short_url="$domain"
+short_url="$domain/$short_code"
+
+
+
+test_curl() {
+# 添加超时和重试机制
+local curl_cmd="curl -m 10 -s --retry 2 --retry-delay 1"
+
+# 添加请求日志
+# echo "Making request to: $short_url"
+# echo "Method: $test_method"
+# echo "Data: ${test_data[*]}"
+
+# 执行请求并捕获响应和状态码
+local response_body
+local http_code
+
+response_body=$($curl_cmd -X "$test_method" -d "${test_data[*]}" "$short_url")
+http_code=$?
+
+# 检查curl执行状态
+if [ $http_code -ne 0 ]; then
+    echo "Error: curl failed with code $http_code" >&2
+    return 1
+fi
+
+# 返回响应体
+echo "$response_body"
+
+}
+
+
 response_body=$(test_curl "$short_url" "${test_method}" "${test_data[@]}") || exit 1
 
 date=$(date +"%Y-%m-%d")

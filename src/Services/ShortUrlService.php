@@ -1,11 +1,11 @@
 <?php
 namespace Suxianjia\xianjia_short_code\Services;
 use Suxianjia\xianjia_short_code\Core\SystemConfig; // $config = SystemConfig::getInstance():: getModel('Database');
- use Suxianjia\xianjia_short_code\Model\ShortUrlModel;
-use Suxianjia\xianjia_short_code\Services\MysqlServices; //      MysqlServices::getInstance()
-use Suxianjia\xianjia_short_code\Services\RedisServices; //        RedisServices::getInstance()
+use Suxianjia\xianjia_short_code\Model\ShortUrlModel;
+// use Suxianjia\xianjia_short_code\Services\MysqlServices; //      MysqlServices::getInstance()
+// use Suxianjia\xianjia_short_code\Services\RedisServices; //        RedisServices::getInstance()
 
-use   Suxianjia\xianjia_short_code\Interface\DBInterface; // 数据库模型-接口类 
+// use   Suxianjia\xianjia_short_code\Interface\DBInterface; // 数据库模型-接口类 
 
  /**
   * 
@@ -35,8 +35,27 @@ CREATE TABLE IF NOT EXISTS `short_urls` (
  * 短链接服务类
  */
 class ShortUrlService {
+    private static  $tableName = 'short_urls';
+      private static  $expire = 3600;
+   private static $result = [
+                'code' => 500,
+                'message' => 'error',
+                'data' =>[]
+        ];
   
     private static $instance;
+
+
+    public static function setresult($code = 500,string $message = 'error',array $data =[] ,array $adddata =[]): array
+    {
+        self::$result ['code'] = $code; 
+        self::$result ['data'] =    $data ; 
+        foreach ($adddata as $key => $value) {
+            self::$result ['data'][$key ] = $value;
+        }  
+        self::$result ['message'] =  $message;
+        return self::$result;
+    }
     /**
      * 获取服务实例
      * @param array $dbConfig 数据库配置
@@ -62,26 +81,40 @@ class ShortUrlService {
      * @param string $long_url 原始URL
      * @return array|false 返回短码和原始URL，失败返回false
      */
-    public function create_code(string $long_url)
-    {
-        // 1. 生成短码
-        $short_code = substr(md5(uniqid()), 0, 6);
-        
-        // 2. 存储到数据库
-        $model = ShortUrlModel::getInstance();
-        $result = $model->insert([
-            'long_url' => $long_url,
-            'short_code' => $short_code
-        ]);
-        
-        if (!$result) {
-            return false;
+    public static function create_code(string $long_url = '')  :string |array
+    { 
+        if ( $long_url =='') {
+             return   self::setresult (500,' long_url  is empty ', [] );
         }
-        
-        return [
-            'code' => $short_code,
-            'long_url' => $long_url
-        ];
+      
+        $cache_key = "shorturl:". md5( $long_url );
+        $result  =   RedisServices::getInstance()::$obj->get($cache_key);
+        // var_dump(       $result    ); exit;
+        if ($result) { 
+            $data = json_decode( $result , true);
+            $data['expires_at'] = date('Y-m-d H:i:s', time() + self::$expire);// 3600); //
+            RedisServices::getInstance()::$obj->set($cache_key,json_encode($data), self::$expire );//   
+            // RedisServices::getInstance()::$obj->setttl($cache_key, 3600);//   
+            // return   self::setresult (200,'redis cache Success', json_decode( $result , true) ); 
+            return   self::setresult (200,'redis cache Success', $data ); 
+        } 
+        $Model= new ShortUrlModel();
+        $result =   $Model->findByLong_url($long_url); 
+        if ($result) {
+            $result['expires_at'] = date('Y-m-d H:i:s', time() + self::$expire); //
+            RedisServices::getInstance()::$obj->set($cache_key,json_encode ($result ), self::$expire );//   
+            return   self::setresult (200,'db cache Success', $result); 
+        } 
+        $data = [];
+        $data['long_url' ] = $long_url;
+        $data['short_code' ] = self::generateShortCode();  
+        $data['expires_at'] = date('Y-m-d H:i:s', time() + self::$expire);  
+        $result =  $Model->createOne($data );
+        if (!$result) { 
+            return   self::setresult (500,'db create error', $data ); 
+        } 
+        RedisServices::getInstance()::$obj->set($cache_key,json_encode($data), self::$expire);//   
+        return   self::setresult (200,'db create Success',$data, ['result' => $result]);  
     }
 
     /**
@@ -90,17 +123,19 @@ class ShortUrlService {
      * @return array 包含短码的数组
      */
     public static function shorten($longUrl) {
-        $shortCode = $this->generateShortCode();
+        $cache_key = "shorturl:". md5( $longUrl ); 
+
+         $shortCode =  self::generateShortCode();
         // $db = MysqlServices::getInstance();
 
               $Model= new ShortUrlModel;
 
         $redis = RedisServices::getInstance();
-        $Model->insert('short_urls', [
+        $Model->insert( self::$tableName, [
             'long_url' => $longUrl,
             'short_code' => $shortCode
         ]);
-        $redis->setex("shorturl:$shortCode", 3600, $longUrl);
+        $redis->setex( $cache_key , self::$expire, $longUrl);
         return ['short_code' => $shortCode];
     }
 
@@ -109,23 +144,37 @@ class ShortUrlService {
      * @param string $shortCode 短码
      * @return array 包含原始 URL 的数组
      */
-    public static function getOriginalUrl($shortCode) {
-  
+    public static function getOriginalUrl( string $shortCode ='') {
 
-        $longUrl =   RedisServices::getInstance()::$obj->get("shorturl:$shortCode");
-        if ($longUrl) {
-            return ['long_url' => $longUrl];
+        if ( $shortCode =='') {
+             return   self::setresult (500,' shortCode  is empty ', [] );
+        }
+        $Model= new ShortUrlModel ();
+         $cache_key = "shortCode:".   $shortCode  ;
+
+         $result  =   RedisServices::getInstance()::$obj->get($cache_key);
+         
+        if ($result) { 
+                $data = json_decode( $result , true);
+                $data['expires_at'] = date('Y-m-d H:i:s', time() + self::$expire); //
+                RedisServices::getInstance()::$obj->set($cache_key,json_encode ($data ), self::$expire );// 
+                $Model->incrementHits($shortCode );
+                
+                return   self::setresult (200,'redis   Success', $data     );  
         } 
    
-        $Model= new ShortUrlModel ();
+        
          $result = $Model->findByCode($shortCode); 
-        if ($result) {
- 
-            RedisServices::getInstance()::$obj->setex("shorturl:$shortCode", 3600, $result['long_url']);
-            return $result['long_url'];
+        if ($result) { 
+                $data =  $result  ;
+                $data['expires_at'] = date('Y-m-d H:i:s', time() + self::$expire); 
+                RedisServices::getInstance()::$obj->set($cache_key,json_encode ($data ), self::$expire );
+                    $Model->incrementHits($shortCode );
+                return   self::setresult (200,'db   Success',$data   );  
         }
+        // echo $shortCode;
 
-        return  $result;
+         return   self::setresult (400,'shortCode 短码    not found',['findByCode'=>$result]   );  
     }
 /**
  *  生成 short_code 
@@ -133,6 +182,6 @@ class ShortUrlService {
  * 
  * */
     private  static function generateShortCode() {
-        return substr(md5(uniqid()), 0, 8);
+        return substr(md5(uniqid()), 0, 10);
     }
 }

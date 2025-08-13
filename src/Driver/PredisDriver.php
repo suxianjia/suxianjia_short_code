@@ -84,6 +84,20 @@ class PredisDriver implements RedisInterface {
         }
     }
 
+
+/**
+ * 设置Redis键的过期时间
+ * @param string $key 键名
+ * @param int $ttl 过期时间（秒）
+ * @return bool
+ */
+public function setttl(string $key, int $ttl): bool {
+    return $this->currentConnection->expire($key, $ttl);
+}
+
+
+
+
     /**
      * 获取缓存
      * @param string $key 键
