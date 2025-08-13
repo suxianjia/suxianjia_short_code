@@ -58,7 +58,7 @@ class ShortUrlModel extends CommonModel {
      * @param array $data 数据数组
      * @return bool 是否成功
      */
-    public function insert(array $data): bool {
-        return $this->insertOne($this->table, $data);
+    public function insertOne(array $data = []): bool {
+        return $this->insert($this->table, $data);
     }
 }

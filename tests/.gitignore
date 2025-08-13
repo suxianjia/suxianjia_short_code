@@ -1,0 +1,5 @@
+# 依赖目录
+apidocs/*
+reports/*
+.DS_Store
+*.log

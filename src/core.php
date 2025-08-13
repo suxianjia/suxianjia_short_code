@@ -128,7 +128,7 @@ class core {
         } 
  // echo " requestMethod  : $requestMethod";
 // echo "<pre>";
-//  print_r( $routes); exit;
+   // print_r( $routes); exit;
 
         // 检查静态路由
         foreach ($routes[$requestMethod] as $route => $handler) {

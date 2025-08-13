@@ -21,33 +21,29 @@ fi
 #  {"code":200,"message":"hello index!","data":[]}
 
 
-inputData=""
-url="$domain$inputData"
-method='GET'
-user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:66.0) Gecko/20100101 Firefox/66.0"
+test_name='短链接重定向测试'
+test_method='GET'
+test_data=(
+    "key1=value1"
+    "key2=value2"
+)
 
-cookies=""
-# 模拟 GET 请求
-response=$(curl -s -o /dev/null -w "%{http_code}" "$url")
+short_url="$domain"
+response_body=$(test_curl "$short_url" "${test_method}" "${test_data[@]}") || exit 1
 
-echo  "-------- "
-
-echo "response 值： $response"
 date=$(date +"%Y-%m-%d")
+log_success="${path}/test_success_${date}.log"
+log_error="${path}/test_error_${date}.log"
 
-# 验证返回状态码是否为 301 或 302（重定向）
-if [[ "$response" == "301" || "$response" == "302" ]]; then
-        echo "测试通过：短链接重定向成功，状态码 $response"
-        echo -e "|--- domain  : $domain   inputData : $inputData , method : $method , user_agent: $user_agent , response : $response  " >> ${path}/test_sueccs_${date}.log 
-        echo "|--- 测试通过：短链接重定向成功，状态码 $response \n" >> ${path}/test_sueccs_${date}.log
-        echo "|---   \n" >> ${path}/test_error_${date}.log
-        exit 0
-elif  [[ "200" == "$response" ]]; then
-        echo "200 "
-
-        echo "测试通过：短链接重定向成功，状态码 $response"
-        echo -e "|--- domain  : $domain   inputData : $inputData , method : $method , user_agent: $user_agent , response : $response  " >> ${path}/test_sueccs_${date}.log 
-        echo "|--- 测试通过：短链接重定向成功，状态码 $response \n" >> ${path}/test_sueccs_${date}.log
+if [[ "$response_body" == "200" ]]; then
+    echo "测试通过：短链接重定向成功，状态码 200"
+    echo -e "|--- domain: $domain, method: $test_method, response: 200" >> "$log_success"
+    exit 0
+else
+    echo "测试失败：状态码 $response_body"
+    echo -e "|--- domain: $domain, method: $test_method, response: $response_body" >> "$log_error"
+    exit 1
+fi
         echo "|---   \n" >> ${path}/test_error_${date}.log
 
         echo  "通过" 

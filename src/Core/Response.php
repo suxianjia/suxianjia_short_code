@@ -15,7 +15,8 @@ class Response {
     public static function error($message, $code = 400) {
         self::output([
             'code' => $code,
-            'message' => $message
+            'message' => $message,
+            'data' => []
         ], $code);
     }
 

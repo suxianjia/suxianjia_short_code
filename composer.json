@@ -7,7 +7,8 @@
     "php": "^8.2",
     "ext-pdo": "*",
     "ext-redis": "*",
-    "predis/predis": "^3.2"
+    "predis/predis": "^3.2",
+    "guzzlehttp/guzzle": "^7.9"
   },
   "autoload": {
     "psr-4": {

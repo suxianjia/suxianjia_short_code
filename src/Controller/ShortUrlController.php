@@ -21,26 +21,25 @@ class ShortUrlController {
         $response->success([],"ShortUrlController index index!");
     }
 //shorten
-
+//http://localhost:8000/short-url/create_code 
 //     生成短码
 //     接收 长链接 
 //     返回 短码 和 长链接
 //     1. 接收长链接
 //     2. 生成短码
 //    public function  create_code  (Request $request, Response $response) {
-    public function create_code  (Request $request, Response $response) {
+    public function create  (Request $request, Response $response) {
         
-
          $long_url = $request->get('long_url', '');
+        //  $long_url = $request->post('long_url', '');
 
-
+ echo   $long_url ;
         // 1. 短码 
     $res = ShortUrlService::getInstance()->create_code($long_url);
-    
+    var_dump(    $res );
     // 2. 判断结果有效性
-    if (!$res ) {
-        $response->setStatusCode(404);
-        return $response->json(['error' => 'create code failed']);  
+    if (!$res ) { 
+        return $response->error( 'create code failed' );  
     }
     $response->success([
         "code"=> $res['code'],
@@ -56,16 +55,14 @@ public function redirect(Request $request, Response $response, $code = '') {
     $res = ShortUrlService::getInstance()::getOriginalUrl($code);
     
     // 2. 判断结果有效性
-    if (!$res || empty($res['long_url'])) {
-        $response->setStatusCode(404);
-        return $response->json(['error' => 'Short URL not found']);
+    if (!$res || empty($res['long_url'])) { 
+        return $response->error(  'Short URL not found' );
     }
     
     // 3. 安全校验（示例）
     $longUrl = $res['long_url'];
-    if (!filter_var($longUrl, FILTER_VALIDATE_URL)) {
-        $response->setStatusCode(400);
-        return $response->json(['error' => 'Invalid target URL']);
+    if (!filter_var($longUrl, FILTER_VALIDATE_URL)) { 
+        return $response->error( 'Invalid target URL' );
     }
     
     // 4. 执行301永久重定向
@@ -75,7 +72,21 @@ public function redirect(Request $request, Response $response, $code = '') {
     // header("Location: " . $longUrl, true, 301);
     // exit;
 }
+// http://localhost:8000/short-url/find?code=abc1334
+// http://localhost:8000/short-url/find?code=abc1334
+public function find(Request $request, Response $response){
 
+    $code =  $request->get('code')  ;
+     // 1. 获取原始URL
+    $res = ShortUrlService::getInstance()::getOriginalUrl($code);
+    
+    if (!$res || empty($res['long_url'])) { 
+        return $response->error(  'Short URL not found' );
+    }
+    $response->success( $res," Success");
+
+
+}
 
     // private function generateShortCode($url) {
     //     return substr(md5($url), 0, 6);

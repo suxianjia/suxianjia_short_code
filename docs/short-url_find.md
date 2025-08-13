@@ -1,12 +1,12 @@
 # API 测试报告
 # 测试日期: 2025-08-12
 ## 测试用例
-### 测试用例方法: 获取语言
+### 测试用例方法: short-url_find
 ## 简要描述: [] 
 ## 接口状态: 已完成
 ## 请求URL:  
 ```shell  
-http://localhost:8000/abc1334
+http://localhost:8000/short-url/find
 ```   
 ## 请求方式:  
 ```shell  
@@ -16,9 +16,7 @@ GET
 ## 输入参数:
 | 参数名 | 值 |  必选 | 参数类型 | 说明 |
 |:--------:|:----:|:----:|:----:|:------:|
-| key1111 | value111111 | 否 | string | - | 
-| key2 | value2 | 否 | string | - | 
-| param | abc123 | 否 | string | - | 
+| code | abc1334 | 否 | string | - | 
  
  
  
