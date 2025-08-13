@@ -16,7 +16,7 @@ POST
 ## 输入参数:
 | 参数名 | 值 |  必选 | 参数类型 | 说明 |
 |:--------:|:----:|:----:|:----:|:------:|
-| long_url | https://www.upetrol.net/new_product_detail/id/1601/user_id/234567 | 否 | string | - | 
+| long_url | https://www.upetrol.net/new_product_detail/id/1601/user_id/23400 | 否 | string | - | 
 | user_id | 1601 | 否 | string | - | 
  
  
@@ -25,20 +25,15 @@ POST
 ## 返回值: string
 ## 请求结果:  
 ```shell  
-200
+null
 ```   
  
 ## 成功返回示例:
 ```json  
 {
-    "status": "200",
-    "msg": "db create Success",
-    "data": {
-  "long_url": "https://www.upetrol.net/new_product_detail/id/1601/user_id/234567 user_id=1601",
-  "short_code": "2f41902f61",
-  "expires_at": "2025-08-13 13:40:33",
-  "result": true
-}
+    "status": "null",
+    "msg": "",
+    "data": 
 }
 ```  
  
@@ -50,14 +45,9 @@ POST
 ## 错误返回示例:
 ```json  
 {
-    "status": "200",
-    "msg": "db create Success",
-    "data":  {
-  "long_url": "https://www.upetrol.net/new_product_detail/id/1601/user_id/234567 user_id=1601",
-  "short_code": "2f41902f61",
-  "expires_at": "2025-08-13 13:40:33",
-  "result": true
-}
+    "status": "null",
+    "msg": "",
+    "data":  
 }
 ```  
  
@@ -65,6 +55,3 @@ POST
 ## 返回参数:
 | 参数名 | 值 | 必选 | 类型 | 说明 |
 |:------:|:--:|:----:|:----:|:----:|
-| code | 200 | 否 | string | - |
-| message | db create Success | 否 | string | - |
-| data | {"long_url":"https://www.upetrol.net/new_product_detail/id/1601/user_id/234567 user_id=1601","short_code":"2f41902f61","expires_at":"2025-08-13 13:40:33","result":true} | 否 | string | - |

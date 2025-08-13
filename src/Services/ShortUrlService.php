@@ -78,10 +78,12 @@ class ShortUrlService {
     
     /**
      * 生成短码
+     * 
+     *  $res = ShortUrlService::getInstance()::create_code($long_url, $user_id); 
      * @param string $long_url 原始URL
      * @return array|false 返回短码和原始URL，失败返回false
      */
-    public static function create_code(string $long_url = '')  :string |array
+    public static function create_code(string $long_url = '' ,int $user_id = 0)  :string |array
     { 
         if ( $long_url =='') {
              return   self::setresult (500,' long_url  is empty ', [] );
@@ -108,6 +110,7 @@ class ShortUrlService {
         $data = [];
         $data['long_url' ] = $long_url;
         $data['short_code' ] = self::generateShortCode();  
+           $data['user_id' ]=  $user_id;
         $data['expires_at'] = date('Y-m-d H:i:s', time() + self::$expire);  
         $result =  $Model->createOne($data );
         if (!$result) { 
@@ -133,7 +136,8 @@ class ShortUrlService {
         $redis = RedisServices::getInstance();
         $Model->insert( self::$tableName, [
             'long_url' => $longUrl,
-            'short_code' => $shortCode
+            'short_code' => $shortCode,
+            'user_id' => $user_id
         ]);
         $redis->setex( $cache_key , self::$expire, $longUrl);
         return ['short_code' => $shortCode];

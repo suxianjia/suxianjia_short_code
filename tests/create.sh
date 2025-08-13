@@ -37,34 +37,44 @@ load_env || exit 1
 short_url="$domain/short-url/create"   
 # 使用普通数组模拟关联数组
 test_data=( 
-    "long_url=https://www.upetrol.net/new_product_detail/id/1601/user_id/234567"
+    "long_url=https://www.upetrol.net/new_product_detail/id/1601/user_id/23400"
     "user_id=1601"
 )  
 test_curl() {
-# 添加超时和重试机制
-local curl_cmd="curl -m 10 -s --retry 2 --retry-delay 1"
+    # 添加超时和重试机制
+    local curl_cmd="curl -m 10 -s --retry 2 --retry-delay 1"
 
-# 添加请求日志
-# echo "Making request to: $short_url"
-# echo "Method: $test_method"
-# echo "Data: ${test_data[*]}"
+    # 解析多组变量为 curl 可用的格式
+    local curl_data=""
+    for item in "${test_data[@]}"; do
+        if [ -n "$curl_data" ]; then
+            curl_data="$curl_data&$item"
+        else
+            curl_data="$item"
+        fi
+    done
 
-# 执行请求并捕获响应和状态码
-local response_body
-local http_code
+    # 添加请求日志
+    echo "Making request to: $short_url"
+    echo "Method: $test_method"
+    echo "Data: $curl_data"
 
-response_body=$($curl_cmd -X "$test_method" -d "${test_data[*]}" "$short_url")
-http_code=$?
+    # 执行请求并捕获响应和状态码
+    local response_body
+    local http_code
 
-# 检查curl执行状态
-if [ $http_code -ne 0 ]; then
-    echo "Error: curl failed with code $http_code" >&2
-    return 1
-fi
+    response_body=$($curl_cmd -X "$test_method" -d "$curl_data" "$short_url")
+    http_code=$?
 
-# 返回响应体
-echo "$response_body"
+    # 检查curl执行状态
+    if [ $http_code -ne 0 ]; then
+        echo "Error: curl failed with code $http_code" >&2
+        echo "Response: $response_body" >&2
+        return 1
+    fi
 
+    # 返回响应体
+    echo "$response_body"
 }
 echo $report_path
 response_body=$(test_curl "$short_url"  "${test_method}"   "${test_data[@]}"   ) || exit 1

@@ -32,12 +32,25 @@ class ShortUrlController {
  *     2. 生成短码
  * */ 
     public function create  (Request $request, Response $response) { 
+
+        //         var_dump(    [$request->post('long_url', '') , $request->post('user_id', 0) ]);
+        // exit;
+
+
         // $long_url = $request->get('long_url', ''); 
         $long_url = $request->post('long_url', ''); 
         if ( $long_url =='') {
             return $response->error(  'long_url   is empty' ); 
         } 
-        $res = ShortUrlService::getInstance()::create_code($long_url); 
+
+         $user_id = $request->post('user_id', 0); 
+                 if ( $user_id ==0) {
+            return $response->error(  'user_id   is empty' ); 
+        } 
+
+
+
+        $res = ShortUrlService::getInstance()::create_code($long_url, $user_id); 
         if ( 200 != $res['code']  ) { 
             return $response->error( $res['message']);  
         }
