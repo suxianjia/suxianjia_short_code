@@ -108,7 +108,8 @@ class ShortUrlService {
             return   self::setresult (200,'db cache Success', $result); 
         } 
         $data = [];
-        $data['long_url' ] = $long_url;
+        // $data['long_url' ] = $long_url;
+        $data['long_url' ] = htmlspecialchars_decode($long_url);
         $data['short_code' ] = self::generateShortCode();  
            $data['user_id' ]=  $user_id;
         $data['expires_at'] = date('Y-m-d H:i:s', time() + self::$expire);  
